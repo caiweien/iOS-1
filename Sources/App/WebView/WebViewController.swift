@@ -11,6 +11,7 @@ import SwiftMessages
 import SwiftUI
 import UIKit
 import WebKit
+import SwiftUI
 
 final class WebViewController: UIViewController, WKNavigationDelegate, WKUIDelegate, UIViewControllerRestoration {
     var webView: WKWebView!
@@ -254,6 +255,11 @@ final class WebViewController: UIViewController, WKNavigationDelegate, WKUIDeleg
         if #unavailable(iOS 14.0), !dropSupportViewDisplayedPreviously {
             UserDefaults.standard.set(true, forKey: dropSupportMessageKey)
             present(DropSupportMessageViewController(), animated: true)
+        }
+
+        if #available(iOS 13, *) {
+            let assistView = UIHostingController(rootView: AssistView(viewModel: .init(server: server)))
+            present(assistView, animated: true)
         }
     }
 

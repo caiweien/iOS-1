@@ -535,6 +535,10 @@
 		42F5CAEB2B10CED600409816 /* ThreadCredentialsSharing+build.swift in Sources */ = {isa = PBXBuildFile; fileRef = 42F5CADF2B10CD2D00409816 /* ThreadCredentialsSharing+build.swift */; };
 		42F5CAEC2B10CED600409816 /* ThreadCredentialsSharingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 42CA28A62B1012DE0093B31A /* ThreadCredentialsSharingView.swift */; };
 		42F5CAED2B10CF3A00409816 /* Assets.swift in Sources */ = {isa = PBXBuildFile; fileRef = B65B15042273188300635D5C /* Assets.swift */; };
+		42AB06BE2B0B651800263B2B /* AssistModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 42AB06BD2B0B651800263B2B /* AssistModel.swift */; };
+		42AB06C02B0B661B00263B2B /* AssistChatItem.swift in Sources */ = {isa = PBXBuildFile; fileRef = 42AB06BF2B0B661B00263B2B /* AssistChatItem.swift */; };
+		42F717402B0AAAD5003A502F /* AssistView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 42F7173F2B0AAAD5003A502F /* AssistView.swift */; };
+		42F717422B0AB075003A502F /* AssistViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 42F717412B0AB075003A502F /* AssistViewModel.swift */; };
 		491E98FF25D543560077BBE3 /* LogbookEntry.swift in Sources */ = {isa = PBXBuildFile; fileRef = 491E98FE25D543560077BBE3 /* LogbookEntry.swift */; };
 		491E990025D543560077BBE3 /* LogbookEntry.swift in Sources */ = {isa = PBXBuildFile; fileRef = 491E98FE25D543560077BBE3 /* LogbookEntry.swift */; };
 		539AA1653F4BCDB61FE7C696 /* Pods_iOS_Shared_iOS.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 213EF66D14F92AF8BF2E9E98 /* Pods_iOS_Shared_iOS.framework */; };
@@ -1618,6 +1622,10 @@
 		42F5CAB82B10AD9800409816 /* ThreadCredentialsSharingViewModelTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ThreadCredentialsSharingViewModelTests.swift; sourceTree = "<group>"; };
 		42F5CABB2B10AE1A00409816 /* ServerFixture.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ServerFixture.swift; sourceTree = "<group>"; };
 		42F5CADF2B10CD2D00409816 /* ThreadCredentialsSharing+build.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "ThreadCredentialsSharing+build.swift"; sourceTree = "<group>"; };
+		42AB06BD2B0B651800263B2B /* AssistModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AssistModel.swift; sourceTree = "<group>"; };
+		42AB06BF2B0B661B00263B2B /* AssistChatItem.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AssistChatItem.swift; sourceTree = "<group>"; };
+		42F7173F2B0AAAD5003A502F /* AssistView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AssistView.swift; sourceTree = "<group>"; };
+		42F717412B0AB075003A502F /* AssistViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AssistViewModel.swift; sourceTree = "<group>"; };
 		479C2CCB032E2A0ECDE45B87 /* Pods-Tests-App.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Tests-App.debug.xcconfig"; path = "Pods/Target Support Files/Pods-Tests-App/Pods-Tests-App.debug.xcconfig"; sourceTree = "<group>"; };
 		491E98FE25D543560077BBE3 /* LogbookEntry.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LogbookEntry.swift; sourceTree = "<group>"; };
 		553A33E097387AA44265DB13 /* Pods-iOS-App-metadata.plist */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.plist.xml; name = "Pods-iOS-App-metadata.plist"; path = "Pods/Pods-iOS-App-metadata.plist"; sourceTree = "<group>"; };
@@ -3080,6 +3088,15 @@
 				42F5CABB2B10AE1A00409816 /* ServerFixture.swift */,
 			);
 			path = Fixtures;
+		42F7173E2B0AAABD003A502F /* Assist */ = {
+			isa = PBXGroup;
+			children = (
+				42F7173F2B0AAAD5003A502F /* AssistView.swift */,
+				42F717412B0AB075003A502F /* AssistViewModel.swift */,
+				42AB06BD2B0B651800263B2B /* AssistModel.swift */,
+				42AB06BF2B0B661B00263B2B /* AssistChatItem.swift */,
+			);
+			path = Assist;
 			sourceTree = "<group>";
 		};
 		9C4E5E20229D97FA0044C8EC /* Configuration */ = {
@@ -3380,6 +3397,7 @@
 			isa = PBXGroup;
 			children = (
 				42CFCD682B1F956D00CCEF4A /* DropSupport */,
+				42F7173E2B0AAABD003A502F /* Assist */,
 				B657A8E91CA646EB00121384 /* AppDelegate.swift */,
 				D03D893720E0AF1B00D4F28D /* ClientEvents */,
 				11A183B22511BCF300CA326A /* LifecycleManager.swift */,
@@ -5597,7 +5615,10 @@
 				1130F532253A1E7400F371BE /* ComplicationListViewController.swift in Sources */,
 				B6B2E6A5216ACE4400D39A26 /* ActionConfigurator.swift in Sources */,
 				11B92AF2266F23DA00786588 /* NotificationManagerLocalPushInterfaceExtension.swift in Sources */,
+				42AB06C02B0B661B00263B2B /* AssistChatItem.swift in Sources */,
 				11B62DC024F2F06100E5CB55 /* UIApplication+OpenSettings.swift in Sources */,
+				42F717422B0AB075003A502F /* AssistViewModel.swift in Sources */,
+				42AB06BE2B0B651800263B2B /* AssistModel.swift in Sources */,
 				115DA29324F464DC00C00BB1 /* MenuManager.swift in Sources */,
 				11A71C8924A5844300D9565F /* ZoneManagerCollector.swift in Sources */,
 				119C9B2124A44DA500308A54 /* ZoneManager.swift in Sources */,
@@ -5676,6 +5697,7 @@
 				1101568324D770B2009424C9 /* iOSTagManager.swift in Sources */,
 				42F5CABC2B10AE1A00409816 /* ServerFixture.swift in Sources */,
 				11B1FFC524CCD72F00F9BCB2 /* VoiceShortcutRow.swift in Sources */,
+				42F717402B0AAAD5003A502F /* AssistView.swift in Sources */,
 				1168BF33271809C600DD4D15 /* OnboardingAuthError.swift in Sources */,
 				B661FB6F226BCCAD00E541DD /* ConnectionSettingsViewController.swift in Sources */,
 			);
