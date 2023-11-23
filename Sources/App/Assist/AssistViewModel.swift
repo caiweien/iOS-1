@@ -114,7 +114,7 @@ final class AssistViewModel: NSObject, ObservableObject {
         guard let captureDevice = AVCaptureDevice.default(for: .audio) else { return }
 
         do {
-            try audioSession.setCategory(.playAndRecord, mode: .default)
+            try audioSession.setCategory(.record, mode: .default)
             try audioSession.setActive(true)
             let audioInput = try AVCaptureDeviceInput(device: captureDevice)
 
@@ -122,8 +122,10 @@ final class AssistViewModel: NSObject, ObservableObject {
             captureSession?.addInput(audioInput)
 
             let audioOutput = AVCaptureAudioDataOutput()
+
             audioOutput.setSampleBufferDelegate(self, queue: DispatchQueue.global(qos: .userInteractive))
             captureSession?.addOutput(audioOutput)
+
 
             DispatchQueue.global().async { [weak self] in
                 self?.captureSession?.startRunning()
@@ -150,16 +152,11 @@ final class AssistViewModel: NSObject, ObservableObject {
                             if let sttBinaryHandlerId = assistResponse.data?.runnerData?.sttBinaryHandlerId {
                                 print("sttBinaryHandlerId: \(sttBinaryHandlerId)")
                                 self.sttBinaryHandlerId = UInt8(sttBinaryHandlerId)
-
-                                DispatchQueue.global().asyncAfter(deadline: .now() + 3) {
-                                    let byteArrayString = String(format: "%02X", sttBinaryHandlerId) + "a"
-
-//                                    self.connection.write(data: byteArrayString.data(using: .utf8)!)
-                                }
                             }
                         }
 
                         print("assistResponse: \(assistResponse.type)")
+                        self.chatItems.append(.init(id: UUID().uuidString, content: "assistResponse: \(assistResponse.type)", itemType: .input))
 
                     } catch let error {
                         print(error)
@@ -177,19 +174,11 @@ final class AssistViewModel: NSObject, ObservableObject {
         captureSession = nil
     }
 
-    private func dataFromSampleBuffer(sampleBuffer: CMSampleBuffer) -> Data? {
-        guard let blockBuffer = CMSampleBufferGetDataBuffer(sampleBuffer) else { return nil }
-
-        var lengthAtOffset: Int = 0
-        var totalLength: Int = 0
-        var data: UnsafeMutablePointer<Int8>?
-
-        CMBlockBufferGetDataPointer(blockBuffer, atOffset: 0, lengthAtOffsetOut: &lengthAtOffset, totalLengthOut: &totalLength, dataPointerOut: &data)
-
-        guard let bufferData = data else { return nil }
-        let rawData = Data(bytes: bufferData, count: totalLength)
-
-        return rawData
+    private func prefixStringToData(prefix: String, data: Data) -> Data {
+        guard let prefixData = prefix.data(using: .utf8) else {
+            return data
+        }
+        return prefixData + data
     }
 }
 
@@ -208,23 +197,30 @@ extension AssistViewModel: HAConnectionDelegate {
 
             fetchPipelines()
         }
+        chatItems.append(.init(id: UUID().uuidString, content: "\(state)", itemType: .input))
     }
 }
 
 @available(iOS 13.0, *)
 extension AssistViewModel: AVCaptureAudioDataOutputSampleBufferDelegate {
     func captureOutput(_ output: AVCaptureOutput, didOutput sampleBuffer: CMSampleBuffer, from connection: AVCaptureConnection) {
-//        print(output)
-//        print(sampleBuffer)
-//        print(connection)
-        
-        guard let sttBinaryHandlerId = sttBinaryHandlerId,
-              let data = dataFromSampleBuffer(sampleBuffer: sampleBuffer) else { return }
+        //        print(output)
+        //        print(sampleBuffer)
+        //        print(connection)
 
-        var byteArrayString = [UInt8](data).map({ "\($0)" }).joined()
-        byteArrayString = String(format: "%02X", sttBinaryHandlerId) + byteArrayString
 
-//        self.connection.write(data: byteArrayString.data(using: .utf8)!)
+
+        guard let sttBinaryHandlerId = sttBinaryHandlerId else { return }
+
+        let handlerId = String(format: "%02X", sttBinaryHandlerId)
+
+        guard let bytes = try? sampleBuffer.dataBuffer?.dataBytes() else { return }
+
+        let data = prefixStringToData(prefix: handlerId, data: bytes)
+
+        self.connection.write(data: data) {
+            print("completion...")
+        }
 
     }
 }
