@@ -15,6 +15,7 @@ extension FireEventIntent: ServerIntentProviding {}
 extension GetCameraImageIntent: ServerIntentProviding {}
 extension RenderTemplateIntent: ServerIntentProviding {}
 extension AssistIntent: ServerIntentProviding {}
+extension AssistInAppIntent: ServerIntentProviding {}
 
 @available(iOS 13, watchOS 6, *)
 extension IntentPanel: ServerIntentProviding {

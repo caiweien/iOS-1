@@ -3,6 +3,7 @@ import Foundation
 import PromiseKit
 import SafariServices
 import Shared
+import SwiftUI
 
 class IncomingURLHandler {
     let windowController: WebViewWindowController
@@ -114,7 +115,7 @@ class IncomingURLHandler {
             // not a tag
             if let url = userActivity.webpageURL, url.host?.lowercased() == "my.home-assistant.io" {
                 return showMy(for: url)
-            } else if let interaction = userActivity.interaction {
+            } else if let interaction = userActivity.interaction, #available(iOS 13, *) {
                 if let intent = interaction.intent as? OpenPageIntent,
                    let panel = intent.page, let path = panel.identifier {
                     Current.Log.info("launching from shortcuts with panel \(panel)")
@@ -135,15 +136,26 @@ class IncomingURLHandler {
                         )
                     }
                     return true
+                } else if let intent = interaction.intent as? AssistInAppIntent {
+                    Current.Log.info("launching from shortcuts assist in app")
+                    if let server = Current.servers.server(for: intent) {
+                        Current.sceneManager.webViewWindowControllerPromise.done {
+                            $0.open(server: server)
+                            let assistView = UIHostingController(rootView: AssistView(
+                                viewModel: .init(server: server, preferredPipelineId: intent.pipeline?.identifier ?? ""))
+                            )
+                            $0.present(assistView, animated: true)
+                        }
+                    }
+                    return true
+                } else {
+                    return false
                 }
-
-                return false
             } else {
                 return false
             }
         }
     }
-
     func handle(shortcutItem: UIApplicationShortcutItem) -> Promise<Void> {
         Current.backgroundTask(withName: "shortcut-item") { remaining -> Promise<Void> in
             if shortcutItem.type == "sendLocation" {

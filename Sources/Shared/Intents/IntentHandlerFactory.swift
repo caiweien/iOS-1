@@ -30,6 +30,9 @@ public enum IntentHandlerFactory {
             if intent is AssistIntent {
                 return AssistIntentHandler()
             }
+            if intent is AssistInAppIntent {
+                return AssistInAppIntentHandler()
+            }
             if intent is OpenPageIntent || intent is WidgetOpenPageIntent {
                 return OpenPageIntentHandler()
             }

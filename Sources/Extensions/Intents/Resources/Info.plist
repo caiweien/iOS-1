@@ -47,6 +47,7 @@
 				<string>WidgetActionsIntent</string>
 				<string>WidgetOpenPageIntent</string>
 				<string>INShareFocusStatusIntent</string>
+				<string>AssistInAppIntent</string>
 			</array>
 		</dict>
 		<key>NSExtensionPointIdentifier</key>

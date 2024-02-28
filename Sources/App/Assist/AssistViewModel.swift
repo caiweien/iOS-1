@@ -1,0 +1,215 @@
+import Foundation
+import Shared
+import HAKit
+import AVFoundation
+
+final class AssistViewModel: NSObject, ObservableObject {
+    @Published var chatItems: [AssistChatItem] = []
+    @Published var pipelines: [Pipeline] = []
+    @Published var preferredPipelineId: String = ""
+    @Published var showScreenLoader = false
+    @Published var inputText = "How many lights are on?"
+
+    private var captureSession: AVCaptureSession?
+    private let connection: HAConnection
+
+    private var sttBinaryHandlerId: UInt8?
+    private var cancellable: HACancellable?
+
+    init(server: Server, preferredPipelineId: String = "") {
+        self.connection = Current.api(for: server).connection
+        self.preferredPipelineId = preferredPipelineId
+        super.init()
+        connection.delegate = self
+    }
+
+    func endProcesses() {
+        connection.disconnect()
+        captureSession?.stopRunning()
+    }
+
+    func assist() {
+        guard !inputText.isEmpty else { return }
+        guard !pipelines.isEmpty else {
+            fetchPipelines()
+            return
+        }
+        let request = HARequest(type: .webSocket("assist_pipeline/run"), data: [
+            "pipeline": preferredPipelineId,
+            "start_stage": "intent",
+            "end_stage": "intent",
+            "input": [
+                "text": inputText
+            ]
+        ])
+        connection.subscribe(to: request) { [weak self] cancellable, data in
+            guard let self = self else { return }
+            if case .dictionary(let dictionary) = data  {
+                do {
+                    let jsonData = try JSONSerialization.data(withJSONObject: dictionary, options: [])
+                    let assistResponse = try JSONDecoder().decode(AssistResponse.self, from: jsonData)
+                    print(assistResponse)
+
+                    if assistResponse.type == .intentEnd {
+                        if let speech = assistResponse.data?.intentOutput?.response?.speech.plain.speech {
+                            self.chatItems.append(.init(id: UUID().uuidString, content: speech, itemType: .output))
+                        }
+                    }
+
+                } catch let error {
+                    print(error)
+                }
+            }
+            cancellable.cancel()
+        }
+        chatItems.append(.init(id: UUID().uuidString, content: inputText, itemType: .input))
+        inputText = ""
+    }
+
+    func fetchPipelines() {
+        showScreenLoader = true
+        let request = HARequest(type: .webSocket("assist_pipeline/pipeline/list"))
+        let pipelinesRequest = connection.send(request)
+
+        pipelinesRequest.promise.pipe { [weak self] result in
+            guard let self = self else { return }
+            switch result {
+            case .fulfilled(let data):
+                switch data {
+                case .dictionary(let dictionary):
+                    do {
+                        let jsonData = try JSONSerialization.data(withJSONObject: dictionary, options: [])
+                        print(dictionary)
+                        let pipelines = try JSONDecoder().decode(PipelineResponse.self, from: jsonData)
+                        if self.preferredPipelineId.isEmpty {
+                            self.preferredPipelineId = pipelines.preferredPipeline
+                        }
+                        self.pipelines = pipelines.pipelines
+                        print(pipelines)
+                    } catch {
+                        print("Error converting dictionary to data: \(error)")
+                    }
+                default:
+                    break
+                }
+            case .rejected(let error):
+                print(error)
+            }
+        }
+    }
+
+    func startStreaming() {
+        if captureSession?.isRunning ?? false {
+            captureSession?.stopRunning()
+            cancellable?.cancel()
+            return
+        }
+
+        let audioSession = AVAudioSession.sharedInstance()
+        guard let captureDevice = AVCaptureDevice.default(for: .audio) else { return }
+
+        do {
+            try audioSession.setCategory(.record, mode: .default)
+            try audioSession.setActive(true)
+            let audioInput = try AVCaptureDeviceInput(device: captureDevice)
+
+            captureSession = AVCaptureSession()
+            captureSession?.addInput(audioInput)
+
+            let audioOutput = AVCaptureAudioDataOutput()
+
+            audioOutput.setSampleBufferDelegate(self, queue: DispatchQueue.global(qos: .userInteractive))
+            captureSession?.addOutput(audioOutput)
+
+
+            DispatchQueue.global().async { [weak self] in
+                self?.captureSession?.startRunning()
+            }
+
+            let request = HARequest(type: .webSocket("assist_pipeline/run"), data: [
+                "pipeline": preferredPipelineId,
+                "start_stage": "stt",
+                "end_stage": "tts",
+                "input": [
+                    "sample_rate": 16000
+                ]
+            ])
+            connection.subscribe(to: request) { [weak self] cancellable, data in
+                guard let self = self else { return }
+                self.cancellable = cancellable
+                if case .dictionary(let dictionary) = data  {
+                    do {
+                        let jsonData = try JSONSerialization.data(withJSONObject: dictionary, options: [])
+                        let assistResponse = try JSONDecoder().decode(AssistResponse.self, from: jsonData)
+                        print(assistResponse)
+
+                        if assistResponse.type == .runStart {
+                            if let sttBinaryHandlerId = assistResponse.data?.runnerData?.sttBinaryHandlerId {
+                                print("sttBinaryHandlerId: \(sttBinaryHandlerId)")
+                                self.sttBinaryHandlerId = UInt8(sttBinaryHandlerId)
+                            }
+                        }
+
+                        print("assistResponse: \(assistResponse.type)")
+                        self.chatItems.append(.init(id: UUID().uuidString, content: "assistResponse: \(assistResponse.type)", itemType: .input))
+
+                    } catch let error {
+                        print(error)
+                    }
+                }
+            }
+
+        } catch {
+            print("Error starting audio streaming: \(error.localizedDescription)")
+        }
+    }
+
+    private func stopStreaming() {
+        captureSession?.stopRunning()
+        captureSession = nil
+    }
+
+    private func prefixStringToData(prefix: String, data: Data) -> Data {
+        guard let prefixData = prefix.data(using: .utf8) else {
+            return data
+        }
+        return prefixData + data
+    }
+}
+
+@available(iOS 13.0, *)
+extension AssistViewModel: HAConnectionDelegate {
+    func connection(_ connection: HAConnection, didTransitionTo state: HAConnectionState) {
+        switch state {
+        case .disconnected(let reason):
+            print(reason)
+        case .connecting:
+            print("connecting...")
+        case .authenticating:
+            print("authenticating")
+        case .ready(let version):
+            print(version)
+        }
+        chatItems.append(.init(id: UUID().uuidString, content: "\(state)", itemType: .input))
+    }
+}
+
+@available(iOS 13.0, *)
+extension AssistViewModel: AVCaptureAudioDataOutputSampleBufferDelegate {
+    func captureOutput(_ output: AVCaptureOutput, didOutput sampleBuffer: CMSampleBuffer, from connection: AVCaptureConnection) {
+        //        print(output)
+        //        print(sampleBuffer)
+        //        print(connection)
+        guard let sttBinaryHandlerId = sttBinaryHandlerId else { return }
+
+        let handlerId = String(format: "%02X", sttBinaryHandlerId)
+
+        guard let bytes = try? sampleBuffer.dataBuffer?.dataBytes() else { return }
+
+        let data = prefixStringToData(prefix: handlerId, data: bytes)
+
+//        self.connection.write(data: data) {
+//            print("completion...")
+//        }
+    }
+}
