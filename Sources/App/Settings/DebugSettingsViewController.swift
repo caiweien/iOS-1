@@ -22,9 +22,9 @@ class DebugSettingsViewController: HAFormViewController {
 
         becomeFirstResponder()
 
-        if #available(iOS 17, *), !Current.isCatalyst {
-            form.append(threadCredentials())
-        }
+//        if #available(iOS 17, *), !Current.isCatalyst {
+//            form.append(threadCredentials())
+//        }
 
         form.append(contentsOf: [
             logs(),
@@ -135,9 +135,9 @@ class DebugSettingsViewController: HAFormViewController {
         UNUserNotificationCenter.current().add(notificationRequest)
     }
 
-    private func threadCredentials() -> Eureka.Section {
-        Section() <<< SettingsRootDataSource.Row.thread.row
-    }
+//    private func threadCredentials() -> Eureka.Section {
+//        Section() <<< SettingsRootDataSource.Row.thread.row
+//    }
 
     private func logs() -> Eureka.Section {
         let section = Section()
