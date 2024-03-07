@@ -1,23 +1,18 @@
 import Shared
 import SwiftUI
 
-enum ThreadCredentialsAlertType {
-    case empty(title: String, message: String)
-    case error(title: String, message: String)
-}
-
 @available(iOS 16.4, *)
-struct ThreadCredentialsSharingView<Model>: View where Model: ThreadCredentialsSharingViewModelProtocol {
+struct ThreadCredentialsSharingView: View {
     @Environment(\.dismiss) private var dismiss
-    @StateObject private var viewModel: Model
+    @StateObject private var viewModel: ThreadCredentialsSharingViewModel
 
-    init(viewModel: Model) {
+    init(viewModel: ThreadCredentialsSharingViewModel) {
         self._viewModel = .init(wrappedValue: viewModel)
     }
 
     var body: some View {
         VStack {
-            if viewModel.showOperationSuccess {
+            if viewModel.showImportSuccess {
                 successView
                     .onAppear {
                         Haptics.shared.play(.medium)
@@ -38,7 +33,7 @@ struct ThreadCredentialsSharingView<Model>: View where Model: ThreadCredentialsS
         }
         .onAppear {
             Task {
-                await viewModel.mainOperation()
+                await viewModel.retrieveAllCredentials()
             }
         }
     }
@@ -84,7 +79,7 @@ struct ThreadCredentialsSharingView<Model>: View where Model: ThreadCredentialsS
     private var retryButton: some View {
         Button {
             Task {
-                await viewModel.mainOperation()
+                await viewModel.retrieveAllCredentials()
             }
         } label: {
             Text(L10n.retryLabel)

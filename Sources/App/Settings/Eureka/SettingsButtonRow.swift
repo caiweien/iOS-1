@@ -8,7 +8,6 @@ public final class SettingsButtonRow: _ButtonRowOf<String>, RowType {
 
     var isDestructive = false
     var icon: MaterialDesignIcons?
-    var image: UIImage?
     var accessoryIcon: MaterialDesignIcons?
 
     override public func updateCell() {
@@ -26,9 +25,6 @@ public final class SettingsButtonRow: _ButtonRowOf<String>, RowType {
 
         if let icon, !isDestructive {
             cell.imageView?.image = icon.settingsIcon(for: cell.traitCollection)
-        } else if let image {
-            cell.imageView?.image = image.scaledToSize(.init(width: 24, height: 24))
-                .withTintColor(Constants.darkerTintColor)
         } else {
             cell.imageView?.image = nil
         }

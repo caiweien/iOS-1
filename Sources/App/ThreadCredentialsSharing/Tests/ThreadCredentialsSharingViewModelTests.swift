@@ -1,9 +1,8 @@
 @testable import HomeAssistant
-@testable import Shared
 import XCTest
 
-final class ThreadTransferCredentialToHAViewModelTests: XCTestCase {
-    private var sut: ThreadTransferCredentialToHAViewModel!
+final class ThreadCredentialsSharingViewModelTests: XCTestCase {
+    private var sut: ThreadCredentialsSharingViewModel!
     private var mockClient: SimulatorThreadClientService!
 
     override func setUpWithError() throws {
@@ -21,7 +20,7 @@ final class ThreadTransferCredentialToHAViewModelTests: XCTestCase {
 
     func test_retrieveAllCredentials_calls_retrieveAllCredentials() async {
         // When
-        await sut.mainOperation()
+        await sut.retrieveAllCredentials()
 
         // Then
         XCTAssertTrue(mockClient.retrieveAllCredentialsCalled)

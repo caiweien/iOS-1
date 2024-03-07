@@ -1,6 +1,5 @@
 import Eureka
 import Shared
-import SwiftUI
 
 enum SettingsRootDataSource {
     static let buttonRows: [SettingsButtonRow] = {
@@ -23,7 +22,6 @@ enum SettingsRootDataSource {
         case servers
         case location
         case notifications
-        case thread
         case actions
         case sensors
         case complications
@@ -40,7 +38,6 @@ enum SettingsRootDataSource {
                 case .general: return SettingsRootDataSource.general()
                 case .location: return SettingsRootDataSource.location()
                 case .notifications: return SettingsRootDataSource.notifications()
-                case .thread: return SettingsRootDataSource.thread()
                 case .actions: return SettingsRootDataSource.actions()
                 case .sensors: return SettingsRootDataSource.sensors()
                 case .complications: return SettingsRootDataSource.complications()
@@ -96,17 +93,6 @@ enum SettingsRootDataSource {
             $0.icon = .bellOutlineIcon
             $0.presentationMode = .show(controllerProvider: ControllerProvider.callback {
                 NotificationSettingsViewController()
-            }, onDismiss: nil)
-        }
-    }
-
-    private static func thread() -> SettingsButtonRow {
-        SettingsButtonRow {
-            $0.title = L10n.SettingsDetails.Thread.title
-            $0.image = .sharedAssetsImage(named: "thread")
-            $0.presentationMode = .show(controllerProvider: ControllerProvider.callback {
-                guard #available(iOS 17, *) else { return UIViewController() }
-                return UIHostingController(rootView: ThreadCredentialsManagementView.build())
             }, onDismiss: nil)
         }
     }
