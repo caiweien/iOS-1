@@ -837,3 +837,4 @@ Home Assistant is free and open source home automation software with a focus on 
 "widgets.open_page.not_configured" = "No Pages Available";
 "widgets.open_page.title" = "Open Page";
 "yes_label" = "Yes";
+"assist.pipelines_picker.title" = "Assist Pipelines";

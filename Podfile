@@ -35,9 +35,9 @@ pod 'Version'
 pod 'XCGLogger'
 
 pod 'Starscream', git: 'https://github.com/zacwest/starscream', branch: 'ha-swift-api'
-pod 'HAKit', git: 'https://github.com/home-assistant/HAKit.git', tag: '0.4'
-pod 'HAKit/PromiseKit', git: 'https://github.com/home-assistant/HAKit.git', tag: '0.4'
-pod 'HAKit/Mocks', git: 'https://github.com/home-assistant/HAKit.git', tag: '0.4'
+pod 'HAKit', path: '../HAKit'
+pod 'HAKit/PromiseKit', path: '../HAKit'
+pod 'HAKit/Mocks', path: '../HAKit'
 
 def test_pods
   pod 'OHHTTPStubs/Swift'
@@ -48,7 +48,7 @@ def shared_fwk_pods
 end
 
 abstract_target 'iOS' do
-  platform :ios, '12.0'
+  platform :ios, '15.0'
 
   pod 'MBProgressHUD', '~> 1.2.0'
   pod 'ReachabilitySwift'
@@ -98,7 +98,7 @@ abstract_target 'iOS' do
 end
 
 abstract_target 'watchOS' do
-  platform :watchos, '5.0'
+  platform :watchos, '8.0'
 
   target 'Shared-watchOS' do
     shared_fwk_pods
@@ -112,8 +112,8 @@ end
 post_install do |installer|
   installer.pods_project.targets.each do |target|
     target.build_configurations.each do |config|
-      config.build_settings['WATCHOS_DEPLOYMENT_TARGET'] = '5.0'
-      config.build_settings['IPHONEOS_DEPLOYMENT_TARGET'] = '12.0'
+      config.build_settings['WATCHOS_DEPLOYMENT_TARGET'] = '8.0'
+      config.build_settings['IPHONEOS_DEPLOYMENT_TARGET'] = '15.0'
 
       config.build_settings['SWIFT_INSTALL_OBJC_HEADER'] = 'NO' unless target.name.include? 'Firebase'
 

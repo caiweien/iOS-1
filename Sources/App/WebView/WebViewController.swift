@@ -25,7 +25,9 @@ final class WebViewController: UIViewController, WKNavigationDelegate, WKUIDeleg
 
     private var keepAliveTimer: Timer?
     private var initialURL: URL?
-    private var barCodeScannerController: UIViewController?
+
+    /// A view controller presented by a request from the webview
+    private weak var overlayAppController: UIViewController?
 
     private let settingsButton: UIButton! = {
         let button = UIButton()
@@ -1007,6 +1009,7 @@ extension WebViewController: WKScriptMessageHandler {
                                 "hasQRScanner": true,
                                 "canTransferThreadCredentialsToKeychain": Current.matter
                                     .threadCredentialsStoreInKeychainEnabled,
+                                "hasAssist": true,
                             ]
                         ))
                     }
@@ -1078,12 +1081,14 @@ extension WebViewController: WKScriptMessageHandler {
                     incomingMessageId: incomingMessageId
                 )
             case .barCodeScannerClose:
-                barCodeScannerController?.dismiss(animated: true)
+                if let barCodeController = overlayAppController as? BarcodeScannerHostingController {
+                    barCodeController.dismiss(animated: true)
+                }
             case .barCodeScannerNotify:
                 guard let message = incomingMessage.Payload?["message"] as? String else { return }
                 let alert = UIAlertController(title: nil, message: message, preferredStyle: .alert)
                 alert.addAction(.init(title: L10n.okLabel, style: .default))
-                let controller = barCodeScannerController ?? self
+                let controller = overlayAppController ?? self
                 controller.present(alert, animated: false, completion: nil)
             case .threadStoreCredentialInAppleKeychain:
                 guard let macExtendedAddress = incomingMessage.Payload?["mac_extended_address"] as? String,
@@ -1092,6 +1097,11 @@ extension WebViewController: WKScriptMessageHandler {
                     macExtendedAddress: macExtendedAddress,
                     activeOperationalDataset: activeOperationalDataset
                 )
+            case .assistShow:
+                guard overlayAppController == nil else { return }
+                let assistView = UIHostingController(rootView: AssistView(viewModel: .init(server: server)))
+                present(assistView, animated: true, completion: nil)
+                overlayAppController = assistView
             }
         } else {
             Current.Log.error("unknown: \(incomingMessage.MessageType)")
@@ -1162,15 +1172,15 @@ extension WebViewController: WKScriptMessageHandler {
         alternativeOptionLabel: String?,
         incomingMessageId: Int
     ) {
-        barCodeScannerController = BarcodeScannerHostingController(rootView: BarcodeScannerView(
+        overlayAppController = BarcodeScannerHostingController(rootView: BarcodeScannerView(
             title: title,
             description: description,
             alternativeOptionLabel: alternativeOptionLabel,
             incomingMessageId: incomingMessageId
         ))
-        barCodeScannerController?.modalPresentationStyle = .fullScreen
-        guard let barCodeScannerController else { return }
-        present(barCodeScannerController, animated: true)
+        overlayAppController?.modalPresentationStyle = .fullScreen
+        guard let overlayAppController else { return }
+        present(overlayAppController, animated: true)
     }
 }
 
