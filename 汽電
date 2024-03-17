@@ -1,0 +1,20 @@
+git clone https://github.com/home-assistant/iOS.git
+cd iOS
+
+# you must do one of the following, but you do not need to do all of them:
+
+## install cocoapods via homebrew, use that
+brew install cocoapods
+$(brew --prefix)/opt/ruby/bin/gem install cocoapods-acknowledgements
+pod install --repo-update
+
+## install ruby via homebrew, use that
+brew install ruby@3.1
+$(brew --prefix)/opt/ruby@3.1/bin/bundle install
+$(brew --prefix)/opt/ruby@3.1/bin/bundle exec pod install --repo-update
+
+## install ruby via rbenv, use that
+brew install rbenv ruby-build
+rbenv install
+bundle install
+bundle exec pod install --repo-update
